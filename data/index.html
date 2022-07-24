@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <style>
+            * {
+                font-family:'Trebuchet MS', sans-serif
+            }
+
+            html, body{
+                background: #29333b;
+                color: #eee;
+                margin: 0;
+            }
+
+            .loading {
+                text-align: center;
+            }
+
+            header {
+                background: #eee;
+                color:#29333b;
+                display: flex;
+            }
+
+            button {
+                background: #29333b;
+                color: #eee;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+
+            input{
+                max-width:100%;
+                box-sizing: border-box;
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+            }
+
+            select{
+                width: 100%;
+                max-width:100%;
+                border: 1px solid;
+                margin-top: 5px;
+                padding: 5px 10px;
+                border-radius: 5px;
+            }
+
+            .textField, .numberField {
+                width: 100%;
+                max-width:100%;
+                border: 1px solid;
+                margin-top: 5px;
+                padding: 5px 10px;
+                border-radius: 5px;
+            }
+
+
+
+
+
+
+
+
+            .title{
+                padding:10px;
+            }
+
+            .spacer{
+                flex-grow: 1;
+            }
+            .settings{
+                display: none;
+                padding:10px;
+                cursor: pointer;
+            }
+
+            #app{
+                position: relative;
+                display: none;
+                margin: 0 auto ;
+                max-width: 300px;
+                
+            }
+
+            
+
+
+
+
+
+            .dataValueBox{
+                padding: 20px 10px;
+                border-bottom: 1px solid #eee;
+            }
+            .dataValueBox:last-child{
+                border-bottom: none;
+            }
+            .name{
+                font-size: 16px;
+            }
+            .value{
+                text-align: center;
+                font-size: 30px;
+                margin: 5px 0;
+            }
+            .value .unit{
+                font-size: 20px;
+                margin-left: 5px;
+            }
+            .subValuesBox{
+                text-align: center;
+            }
+            .subValue{
+                text-align: center;
+                width: fit-content;
+                margin: 5px 15px;
+                display: block;
+                display: inline-block;
+            }
+            .subValueValue{
+                font-size: 20px;
+            }
+            .subValueValue  .unit{
+                font-size: 14px;
+                margin-left: 5px;
+
+            }
+            .subValueKey{
+                font-size: 14px;
+            }
+
+
+            
+
+            .settingsView{
+                display: none;
+                background: #fff;
+                width: 100%;
+                min-height: 30px;
+                position: absolute;
+                top: 0px;
+                color:#29333b;
+                padding-bottom: 20px;
+                /*margin-bottom: 20px;*/
+                border-bottom: 40px solid #29333b;
+            }
+            
+            .settingsContext{
+                margin:0px 20px
+            }
+
+            .SettingItem {
+                width:100%;
+                margin-bottom:15px;
+            }
+
+
+        </style>
+    </head>
+<body>
+    
+    <header>
+        <div class="title">Climate Sens</div>
+        <div class="spacer"></div>
+        <div class="settings" id="SettingsButton">Settings</div>
+    </header>
+
+    <div class="loading" id="loading">
+        <h1>Loading</h1>
+    </div>
+
+    <main id="app">
+        <div class="dataView" id="dataView">
+            <h2>No data available</h2>
+        </div>
+        <div class="settingsView" id="settingsView">
+            <div class="settingsContext">
+
+                <h2>Settings</h2>
+                <hr/>
+                <div id="settings">
+
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+
+
+
+
+<script>
+    var data = [
+        /*{
+            name:"temp",
+            value:23,
+            subValues:{
+                max:45,
+                min:12,
+                avg:76
+            },
+            unit:"C"
+        },
+        {
+            name:"temp2",
+            value:35,
+            subValues:{
+                max:45,
+                min:12,
+                avg:76
+            },
+            unit:"C"
+        }*/
+    ];
+
+    
+    var Settings = [
+       /* {name:"Name",type:"text", value:""},
+        {name:"Location",type:"text", value:""},
+        {name:"WiFi SSDI",type:"text", value:""},
+        {name:"WiFi Password",type:"text", value:""},
+        {name:"Dashboard",type:"select",options:["Access point", "WiFi"], value:"Access point"},
+        {name:"Freq",type:"number", value:60}, // 60 mins
+        {name:"LED power",type:"checkbox", value:true},
+        {name:"LED activity",type:"checkbox", value:true},
+        {name:"LED connection",type:"checkbox", value:true},
+        {name:"LED error",type:"checkbox", value:true}, */
+    ]
+
+    var NewSettings = {
+        
+    };
+    
+    
+    var settingsActive = false;
+    
+    function display()
+    {
+        document.getElementById('loading').style.display = "none";
+        document.getElementById('app').style.display = "block";
+        document.getElementById('SettingsButton').style.display = "block";
+        
+    }
+
+    function renderData()
+    {
+        if(!data || data.length == 0)
+        {        
+            //console.log("No Data");
+            document.getElementById('dataView').innerHTML = "<h2>No data available</h2>";
+            return;
+        };
+
+
+        var html = "";
+
+        for (let i = 0; i < data.length; i++)
+        {
+            const values = data[i];
+            //console.log("1")
+            
+            html += "<div class='dataValueBox'>";
+
+            var unit = "";
+            if (values.unit)
+                unit = "<span class='unit'>" + values.unit + "</span>";
+            
+            if (values.name)
+                html += "<div class='name'>" + values.name + "</div>";
+            
+            if (values.value)
+                html += "<div class='value'>" + values.value + unit + "</div>";
+            
+            if (values.subValues && Object.keys(values.subValues).length > 0)
+            {
+                html += "<div class='subValuesBox'>";
+                for (let i = 0; i < Object.keys(values.subValues).length; i++)
+                {
+                    const subKey = Object.keys(values.subValues)[i];
+                    const subValue = values.subValues[subKey];
+                    html += "<div class='subValue'><div class='subValueValue'>" + subValue + unit + "</div><div class='subValueKey'>" + subKey + "</div></div>";
+                };
+                html += "</div>";
+            };
+
+                
+            html += "</div>";
+
+        };
+
+        document.getElementById('dataView').innerHTML = html;
+    }
+
+
+
+
+    function renderSettings()
+    {
+        if(!Settings || Settings.length == 0)
+        {        
+            console.log("No Data");
+            document.getElementById('settings').innerHTML = "<h2>No settings available.</h2>";
+            return;
+        };
+
+
+        var html = "";
+        var found = false;
+
+        for (let i = 0; i < Settings.length; i++) 
+        {
+            if(!Settings[i].type || !Settings[i].name)
+                continue ;
+                
+            found = true;
+
+            /*
+            {name:"Name",type:"text", value:""},
+            {name:"Location",type:"text", value:""},
+            {name:"WiFi SSDI",type:"text", value:""},
+            {name:"Dashboard",type:"select",options:["Access point", "WiFi"], value:"Access point"},
+            {name:"Freq",type:"number", value:60}, // 60 mins
+            {name:"LED power",type:"checkbox", value:true},
+            {name:"LED activity",type:"checkbox", value:true},
+            {name:"LED connection",type:"checkbox", value:true},
+            {name:"LED error",type:"checkbox", value:true}, 
+            */
+
+            var value = "";
+            if (Settings[i].value)
+                value = Settings[i].value;
+
+            if (Settings[i].value)
+                value = Settings[i].value;
+
+            var name = "";
+            if (Settings[i].name)
+                name = Settings[i].name;
+            
+
+            html += "<div class='SettingItem'>";
+            html += "<div class='SettingName'>" + Settings[i].name + "</div>";
+            
+            switch (Settings[i].type) 
+            {
+                case "select":
+                    html += "<select value='" + value + "' name='" + name + "' onclick='handleSettingChange(event)'>";
+                    if( Settings[i].options)
+                    {
+                        const options = Settings[i].options;
+                        for (let k = 0; k < options.length; k++) 
+                        {
+                            html += "<option value='"+options[k]+"'>"+options[k]+"</option>";
+                        }
+                    }
+                    html += "</select>";
+                    break;
+
+                case "number":
+                    html += "<input class='numberField' type='number' value='" + value + "' name='" + name + "' onclick='handleSettingChange(event)'/>";
+                    break;
+
+                case "checkbox":
+                    html += "<input class='checkboxFeild' type='checkbox' checked='" + value + "' name='" + name + "' onclick='handleSettingCheckChange(event)'/>";
+                    break;
+            
+
+                case "text":
+                default:
+                    html += "<input class='textField' type='text' value='" + value + "' name='" + name + "' onchange='handleSettingChange(event)'/>";
+                    break;
+            }
+
+            html += "</div>";
+        }
+
+        if(!found)
+        {
+            document.getElementById('settings').innerHTML = "<h2>No settings available.</h2>";
+            return;
+        }
+
+        html += "<button onclick='handleSettingSave()' >Save</button>";
+        html += "<button onclick='handleSettingClose()' >Close</button>";
+        
+        NewSettings = {};
+        document.getElementById('settings').innerHTML = html;
+    }
+
+
+
+
+
+
+    function getData()
+    {
+        const URL = "/get/data";
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", URL, true);
+        xhr.onreadystatechange = function () {
+            if (this.readyState != 4)
+                return;
+
+            if (this.status == 200)
+            {
+                data = JSON.parse(this.responseText);
+                /*if("data" in tempData)
+                    data = tempData.data;
+                if("settings" in tempData)
+                    Settings = tempData.Settings;*/
+
+                renderData();
+                
+                setTimeout(getData, 10000);
+            }
+        };
+        xhr.send();
+    }
+
+    
+
+    function getSettings()
+    {
+        const URL = "/get/settings";
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", URL, true);
+        xhr.onreadystatechange = function () {
+            if (this.readyState != 4)
+                return;
+
+            if (this.status == 200)
+            {
+                Settings = JSON.parse(this.responseText);
+            }
+        };
+        xhr.send();
+    }
+
+
+    function handleSettingsButton() 
+    {
+        settingsActive = !settingsActive;
+
+        if(settingsActive)
+        {
+            document.getElementById('settingsView').style.display = "block";
+            renderSettings();
+        }
+        else
+        {
+            document.getElementById('settingsView').style.display = "none";
+        }
+    }
+
+    
+    function handleSettingSave()
+    {
+        const URL = "/post/settings";
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", URL, true);
+        xhr.onreadystatechange = function () {
+            //if (this.readyState != 4)
+            //    return;
+
+            if (this.status == 200)
+            {
+                const data = JSON.parse(this.responseText);
+                if(data && data.success)
+                {
+                    getSettings();
+                    alert("Success");
+                settingsActive = false;
+                document.getElementById('settingsView').style.display = "none";
+                }
+                else
+                {  
+                    alert("Error");
+                }
+            }
+            else
+            {
+                alert("Error");
+                //document.getElementById('settingsView').style.display = "none";
+            }
+        };
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(NewSettings));
+    }
+    
+
+    function handleSettingClose()
+    {
+        settingsActive = false;
+        document.getElementById('settingsView').style.display = "none";
+    }
+
+    function handleSettingChange(event)
+    {
+        NewSettings = {
+            ...NewSettings,
+            [event.target.name]:event.target.value
+        };
+    }
+
+    function handleSettingCheckChange(event)
+    {
+        NewSettings = {
+            ...NewSettings,
+            [event.target.name]:event.target.checked
+        };
+    }
+
+    
+
+
+    document.getElementById("SettingsButton").addEventListener("click", handleSettingsButton);
+    getData();
+    getSettings();
+    //display();
+    //renderData();
+
+</script>
+
+</body>
+</html>
+
